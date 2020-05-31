@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "zoom_layer",
+  "version": "${version}",
+
+  "name": "ZoomLayer",
+  "description": "",
+  "authors": ["gegy1000"],
+
+  "license": "CC0-1.0",
+
+  "environment": "*",
+  "entrypoints": {},
+  "mixins": ["zoom_layer.mixins.json"],
+
+  "depends": {
+    "fabricloader": ">=0.8.5",
+    "fabric": "*",
+    "minecraft": "1.16.*"
+  }
+}
