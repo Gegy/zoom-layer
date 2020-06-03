@@ -4,7 +4,7 @@ import net.minecraft.world.biome.layer.ScaleLayer;
 import net.minecraft.world.biome.layer.util.LayerSampleContext;
 import net.minecraft.world.biome.layer.util.LayerSampler;
 
-import net.gegy1000.zoomlayer.Shuffleable;
+import net.gegy1000.zoomlayer.CachingLayerAccess;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -41,7 +41,7 @@ public abstract class MixinScaleLayer {
         }
 
         // move `choose` into above if-statement: maintain rng parity
-        ((Shuffleable)ctx).shuffle();
+        ((CachingLayerAccess)ctx).skipInt();
 
         if (iz == 0) {
             int tr = parent.sample(this.transformX(x + 1), this.transformZ(z));
@@ -49,7 +49,7 @@ public abstract class MixinScaleLayer {
         }
 
         // move `choose` into above if-statement: maintain rng parity
-        ((Shuffleable)ctx).shuffle();
+        ((CachingLayerAccess)ctx).skipInt();
 
         int bl = parent.sample(this.transformX(x), this.transformZ(z + 1));
         int tr = parent.sample(this.transformX(x + 1), this.transformZ(z));

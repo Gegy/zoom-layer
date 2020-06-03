@@ -7,7 +7,7 @@ import net.minecraft.world.biome.layer.util.CachingLayerSampler;
 import net.minecraft.world.biome.layer.util.LayerOperator;
 import net.minecraft.world.biome.source.SeedMixer;
 
-import net.gegy1000.zoomlayer.Shuffleable;
+import net.gegy1000.zoomlayer.CachingLayerAccess;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CachingLayerContext.class)
-public class MixinCachingLayerContext implements Shuffleable {
+public class MixinCachingLayerContext implements CachingLayerAccess {
     @Shadow private long localSeed;
     @Shadow @Final private long worldSeed;
     private ConcurrentLayerCache fastCache;
@@ -58,7 +58,7 @@ public class MixinCachingLayerContext implements Shuffleable {
     }
 
     @Override
-    public void shuffle() {
+    public void skipInt() {
         this.localSeed = SeedMixer.mixSeed(this.localSeed, this.worldSeed);
     }
 }

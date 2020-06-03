@@ -5,7 +5,6 @@ package net.gegy1000.zoomlayer;
  *
  * @author SuperCoder79
  */
-public interface Shuffleable {
-
-	void shuffle();
+public interface CachingLayerAccess {
+	void skipInt();
 }
