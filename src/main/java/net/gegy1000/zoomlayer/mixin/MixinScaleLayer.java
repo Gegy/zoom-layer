@@ -3,6 +3,8 @@ package net.gegy1000.zoomlayer.mixin;
 import net.minecraft.world.biome.layer.ScaleLayer;
 import net.minecraft.world.biome.layer.util.LayerSampleContext;
 import net.minecraft.world.biome.layer.util.LayerSampler;
+
+import net.gegy1000.zoomlayer.CachingLayerAccess;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,6 +20,11 @@ public abstract class MixinScaleLayer {
     @Shadow
     protected abstract int sample(LayerSampleContext<?> ctx, int tl, int tr, int bl, int br);
 
+    /**
+     * Replace with faster implementation.
+     *
+     * @author gegy1000
+     */
     @Overwrite
     public int sample(LayerSampleContext<?> ctx, LayerSampler parent, int x, int z) {
         int tl = parent.sample(this.transformX(x), this.transformZ(z));
@@ -34,7 +41,7 @@ public abstract class MixinScaleLayer {
         }
 
         // move `choose` into above if-statement: maintain rng parity
-        ctx.choose(0, 0);
+        ((CachingLayerAccess)ctx).skipInt();
 
         if (iz == 0) {
             int tr = parent.sample(this.transformX(x + 1), this.transformZ(z));
@@ -42,7 +49,7 @@ public abstract class MixinScaleLayer {
         }
 
         // move `choose` into above if-statement: maintain rng parity
-        ctx.choose(0, 0);
+        ((CachingLayerAccess)ctx).skipInt();
 
         int bl = parent.sample(this.transformX(x), this.transformZ(z + 1));
         int tr = parent.sample(this.transformX(x + 1), this.transformZ(z));
