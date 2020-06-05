@@ -5,28 +5,19 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.biome.layer.util.LayerOperator;
 
-import java.util.Arrays;
-
 public final class NLockLayerCache implements BiomeLayerCache {
-    private final long[] keys;
-    private final int[] values;
+    private final Entry[] entries;
 
     private final int capacity;
     private final int mask;
-
-    private final Object[] locks;
 
     public NLockLayerCache(int capacity) {
         this.capacity = MathHelper.smallestEncompassingPowerOfTwo(capacity);
         this.mask = this.capacity - 1;
 
-        this.keys = new long[this.capacity];
-        Arrays.fill(this.keys, Long.MIN_VALUE);
-        this.values = new int[this.capacity];
-
-        this.locks = new Object[this.capacity];
+        this.entries = new Entry[this.capacity];
         for (int i = 0; i < this.capacity; i++) {
-            this.locks[i] = new Object();
+            this.entries[i] = new Entry();
         }
     }
 
@@ -35,20 +26,20 @@ public final class NLockLayerCache implements BiomeLayerCache {
         long key = key(x, z);
         int idx = hash(key) & this.mask;
 
-        Object lock = this.locks[idx];
+        Entry entry = this.entries[idx];
 
         // if the entry here has a key that matches ours, we have a cache hit
-        synchronized (lock) {
-            if (this.keys[idx] == key) {
-                return this.values[idx];
+        synchronized (entry) {
+            if (entry.key == key) {
+                return entry.value;
             }
         }
 
         // cache miss: sample the operator and put the result into our cache entry
         int sampled = operator.apply(x, z);
-        synchronized (lock) {
-            this.keys[idx] = key;
-            this.values[idx] = sampled;
+        synchronized (entry) {
+            entry.key = key;
+            entry.value = sampled;
         }
 
         return sampled;
@@ -60,5 +51,10 @@ public final class NLockLayerCache implements BiomeLayerCache {
 
     private static long key(int x, int z) {
         return ChunkPos.toLong(x, z);
+    }
+
+    static class Entry {
+        long key = Long.MIN_VALUE;
+        int value;
     }
 }

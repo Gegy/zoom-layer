@@ -11,8 +11,8 @@ public final class LayeredBencher implements Bencher {
         LayerSampler sampler = buildLayers(() -> new LayerContext(cacheSupplier.get())).create();
 
         long start = System.currentTimeMillis();
-        for (int z = -512; z < 512; z++) {
-            for (int x = -512; x < 512; x++) {
+        for (int z = -256; z < 256; z++) {
+            for (int x = -256; x < 256; x++) {
                 sampler.sample(x, z);
             }
         }
@@ -22,14 +22,17 @@ public final class LayeredBencher implements Bencher {
 
     static LayerFactory buildLayers(Supplier<LayerContext> context) {
         LayerFactory continents = initContinent(context.get());
-        continents = scaleNn(context.get(), continents);
-        continents = scaleNn(context.get(), continents);
+        continents = scaleFuzzy(context.get(), continents);
+        continents = scaleFuzzy(context.get(), continents);
 
         LayerFactory withIslands = addIsland(context.get(), continents);
-        withIslands = scaleNn(context.get(), withIslands);
-        withIslands = scaleNn(context.get(), withIslands);
+        withIslands = scaleFuzzy(context.get(), withIslands);
+        withIslands = scaleFuzzy(context.get(), withIslands);
 
-        return seedLand(context.get(), withIslands);
+        LayerFactory seededLand = seedLand(context.get(), withIslands);
+        seededLand = scaleFuzzy(context.get(), seededLand);
+
+        return seededLand;
     }
 
     static LayerFactory initContinent(LayerContext context) {
@@ -39,11 +42,25 @@ public final class LayeredBencher implements Bencher {
         });
     }
 
-    static LayerFactory scaleNn(LayerContext context, LayerFactory parent) {
+    static LayerFactory scaleFuzzy(LayerContext context, LayerFactory parent) {
         return () -> {
             LayerSampler parentSampler = parent.create();
             return context.createSampler((x, z) -> {
-                return parentSampler.sample(x >> 1, z >> 1);
+                int px = x >> 1;
+                int pz = z >> 1;
+
+                int tl = parentSampler.sample(px, pz);
+                int tr = parentSampler.sample(px + 1, pz);
+                int bl = parentSampler.sample(px, pz + 1);
+                int br = parentSampler.sample(px + 1, pz + 1);
+
+                int seed = x * 2961 * z * 23651;
+                switch (seed & 3) {
+                    case 0: return tl;
+                    case 1: return tr;
+                    case 2: return bl;
+                    default: return br;
+                }
             });
         };
     }
@@ -72,7 +89,7 @@ public final class LayeredBencher implements Bencher {
                 int sample = parentSampler.sample(x, z);
                 if (sample == 1) {
                     int seed = x * 947123 * z * 43151;
-                    return (seed & 4) + 1;
+                    return (seed & 3) + 1;
                 }
                 return 0;
             });
