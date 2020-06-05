@@ -5,6 +5,7 @@ import net.gegy1000.zoomlayer.cache.NLockLayerCache;
 import net.gegy1000.zoomlayer.cache.OneLockLayerCache;
 import net.gegy1000.zoomlayer.cache.OneSpinLockLayerCache;
 import net.gegy1000.zoomlayer.cache.PackedConcurrentLayerCache;
+import net.gegy1000.zoomlayer.cache.UnsychronizedLayerCache;
 import net.gegy1000.zoomlayer.cache.VanillaBiomeLayerCache;
 import net.gegy1000.zoomlayer.cache.WidePackedConcurrentLayerCache;
 
@@ -47,6 +48,10 @@ public final class LayerCacheBench {
         System.out.println("  benching one spin lock:");
         Results oneSpinLock = batchBench(LayerCacheBench::oneSpinLock, bencher);
         printResults(oneSpinLock);
+
+        System.out.println("  benching unsynchronized unpacked:");
+        Results singleThreadUnpacked = batchBench(LayerCacheBench::unsynchronizedUnpacked, bencher);
+        printResults(singleThreadUnpacked);
     }
 
     private static void printResults(Results results) {
@@ -98,6 +103,10 @@ public final class LayerCacheBench {
 
     private static BiomeLayerCache oneSpinLock() {
         return new OneSpinLockLayerCache(CAPACITY);
+    }
+
+    private static BiomeLayerCache unsynchronizedUnpacked() {
+        return new UnsychronizedLayerCache(CAPACITY);
     }
 
     static class Results {
