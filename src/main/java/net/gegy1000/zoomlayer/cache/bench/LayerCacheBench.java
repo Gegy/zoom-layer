@@ -31,17 +31,29 @@ public final class LayerCacheBench {
         Results vanilla = batchBench(LayerCacheBench::vanilla, bencher);
         printResults(vanilla);
 
+        System.out.println("  benching unsynchronized unpacked flat:");
+        Results singleThreadUnpackedFlat = batchBench(LayerCacheBench::unsynchronizedUnpackedFlat, bencher);
+        printResults(singleThreadUnpackedFlat);
+
+        System.out.println("  benching unsynchronized unpacked:");
+        Results singleThreadUnpacked = batchBench(LayerCacheBench::unsynchronizedUnpacked, bencher);
+        printResults(singleThreadUnpacked);
+
         System.out.println("  benching packed concurrent:");
         Results packedConcurrent = batchBench(LayerCacheBench::packedConcurrent, bencher);
         printResults(packedConcurrent);
+
+        System.out.println("  benching wide packed flat concurrent:");
+        Results widePackedFlatConcurrent = batchBench(LayerCacheBench::widePackedFlatConcurrent, bencher);
+        printResults(widePackedFlatConcurrent);
 
         System.out.println("  benching wide packed concurrent:");
         Results widePackedConcurrent = batchBench(LayerCacheBench::widePackedConcurrent, bencher);
         printResults(widePackedConcurrent);
 
-        System.out.println("  benching wide packed flat concurrent:");
-        Results widePackedFlatConcurrent = batchBench(LayerCacheBench::widePackedFlatConcurrent, bencher);
-        printResults(widePackedFlatConcurrent);
+        System.out.println("  benching one spin lock:");
+        Results oneSpinLock = batchBench(LayerCacheBench::oneSpinLock, bencher);
+        printResults(oneSpinLock);
 
         System.out.println("  benching one lock:");
         Results oneLock = batchBench(LayerCacheBench::oneLock, bencher);
@@ -50,18 +62,6 @@ public final class LayerCacheBench {
         System.out.println("  benching n lock:");
         Results nLock = batchBench(LayerCacheBench::nLock, bencher);
         printResults(nLock);
-
-        System.out.println("  benching one spin lock:");
-        Results oneSpinLock = batchBench(LayerCacheBench::oneSpinLock, bencher);
-        printResults(oneSpinLock);
-
-        System.out.println("  benching unsynchronized unpacked:");
-        Results singleThreadUnpacked = batchBench(LayerCacheBench::unsynchronizedUnpacked, bencher);
-        printResults(singleThreadUnpacked);
-
-        System.out.println("  benching unsynchronized unpacked flat:");
-        Results singleThreadUnpackedFlat = batchBench(LayerCacheBench::unsynchronizedUnpackedFlat, bencher);
-        printResults(singleThreadUnpackedFlat);
     }
 
     private static void printResults(Results results) {
@@ -72,20 +72,21 @@ public final class LayerCacheBench {
 
     private static Results batchBench(Supplier<BiomeLayerCache> cacheSupplier, Bencher bencher) {
         // warm up
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             bencher.bench(cacheSupplier);
         }
 
         long min = Long.MAX_VALUE;
         long max = Long.MIN_VALUE;
         long total = 0;
-        int iterations = 100;
+        int iterations = 300;
 
         for (int i = 0; i < iterations; i++) {
             long time = bencher.bench(cacheSupplier);
             min = Math.min(time, min);
             max = Math.max(time, max);
             total += time;
+            System.gc();
         }
 
         return new Results(min, max, total / iterations);
