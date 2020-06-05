@@ -5,9 +5,11 @@ import net.gegy1000.zoomlayer.cache.NLockLayerCache;
 import net.gegy1000.zoomlayer.cache.OneLockLayerCache;
 import net.gegy1000.zoomlayer.cache.OneSpinLockLayerCache;
 import net.gegy1000.zoomlayer.cache.PackedConcurrentLayerCache;
+import net.gegy1000.zoomlayer.cache.UnsychronizedFlatLayerCache;
 import net.gegy1000.zoomlayer.cache.UnsychronizedLayerCache;
 import net.gegy1000.zoomlayer.cache.VanillaBiomeLayerCache;
 import net.gegy1000.zoomlayer.cache.WidePackedConcurrentLayerCache;
+import net.gegy1000.zoomlayer.cache.WidePackedFlatConcurrentLayerCache;
 
 import java.util.function.Supplier;
 
@@ -37,6 +39,10 @@ public final class LayerCacheBench {
         Results widePackedConcurrent = batchBench(LayerCacheBench::widePackedConcurrent, bencher);
         printResults(widePackedConcurrent);
 
+        System.out.println("  benching wide packed flat concurrent:");
+        Results widePackedFlatConcurrent = batchBench(LayerCacheBench::widePackedFlatConcurrent, bencher);
+        printResults(widePackedFlatConcurrent);
+
         System.out.println("  benching one lock:");
         Results oneLock = batchBench(LayerCacheBench::oneLock, bencher);
         printResults(oneLock);
@@ -52,6 +58,10 @@ public final class LayerCacheBench {
         System.out.println("  benching unsynchronized unpacked:");
         Results singleThreadUnpacked = batchBench(LayerCacheBench::unsynchronizedUnpacked, bencher);
         printResults(singleThreadUnpacked);
+
+        System.out.println("  benching unsynchronized unpacked flat:");
+        Results singleThreadUnpackedFlat = batchBench(LayerCacheBench::unsynchronizedUnpackedFlat, bencher);
+        printResults(singleThreadUnpackedFlat);
     }
 
     private static void printResults(Results results) {
@@ -93,6 +103,10 @@ public final class LayerCacheBench {
         return new WidePackedConcurrentLayerCache(CAPACITY);
     }
 
+    private static BiomeLayerCache widePackedFlatConcurrent() {
+        return new WidePackedFlatConcurrentLayerCache(CAPACITY);
+    }
+
     private static BiomeLayerCache oneLock() {
         return new OneLockLayerCache(CAPACITY);
     }
@@ -107,6 +121,10 @@ public final class LayerCacheBench {
 
     private static BiomeLayerCache unsynchronizedUnpacked() {
         return new UnsychronizedLayerCache(CAPACITY);
+    }
+
+    private static BiomeLayerCache unsynchronizedUnpackedFlat() {
+        return new UnsychronizedFlatLayerCache(CAPACITY);
     }
 
     static class Results {
