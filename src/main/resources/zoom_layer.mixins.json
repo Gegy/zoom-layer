@@ -4,6 +4,9 @@
   "package": "net.gegy1000.zoomlayer.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "MixinCachingLayerContext",
+    "MixinScaleLayer",
+    "MixinBiomeLayerSampler",
     "MixinLocateBiomeCommand"
   ],
   "injectors": {
